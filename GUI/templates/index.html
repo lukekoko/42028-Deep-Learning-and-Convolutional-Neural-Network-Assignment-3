@@ -11,16 +11,21 @@
 </head>
 
 <body>
-    <section class="section">
-        <div class="container">
-            <h1 class="title">
-                <a href="/">
-                    Corona virus detector
-                </a>
-            </h1>
-            <p class="subtitle has-text-danger">
-                {{error}}
-            </p>
+    <section class="hero is-light">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title">
+                    <a href="/" style='color: inherit'>
+                        Corona virus detector
+                    </a>
+                </h1>
+                <h2 class="subtitle">
+                    Group 47
+                </h2>
+                <p class="subtitle has-text-danger">
+                    {{error}}
+                </p>
+            </div>
         </div>
     </section>
 
@@ -68,6 +73,9 @@
 
 </body>
 <script>
+    $(document).ready(function () {
+        readStatus()
+    });
     function displayImage(input) {
         if (input.files && input.files[0]) {
             var reader = new FileReader();
@@ -78,24 +86,19 @@
             };
 
             reader.readAsDataURL(input.files[0]);
-            // document.getElementById('submitbtn').disabled = false;
             $('#submitbtn').prop("disabled", false);
         } else {
-            // document.getElementById('submitbtn').disabled = true;
             $('#submitbtn').prop("disabled", true);
         }
     }
-    $(document).ready(function() {
-        readStatus()
-    });
+
     function readStatus() {
-        var refresh_id = setInterval(function () {
+        setInterval(function () {
             $.get(
                 "/status",
                 function (data) {
-                    console.log(data);
                     if (data.status) {
-                        window.location.replace("/results")
+                        window.location.replace("/result")
                     }
                 }
             )
