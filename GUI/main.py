@@ -22,16 +22,16 @@ def index():
     global predictionDone
     predictionDone = False
     if (request.args):
-        return render_template("index.html", image=request.args.get('image'), error=request.args.get('error'), hidden=(request.args.get('hidden') == 'True'), result=request.args.get('result'))
+        return render_template("index.html", image=request.args.get('image'), error=request.args.get('error'), hidden=(request.args.get('hidden') == 'True'), result=request.args.get('result'), poll=request.args.get('poll'))
     else:
-        return render_template("index.html", image='/static/images/placeholder.png', hidden=hidden, error='', result='Please upload an image to be classified')
+        return render_template("index.html", image='/static/images/placeholder.png', hidden=hidden, error='', result='Please upload an image to be classified', poll=0)
 
-
+# checks if file is image
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
+# uploads image
 @app.route('/upload', methods=['POST', 'GET'])
 def uploadImage():
     if request.method == 'POST':
@@ -50,25 +50,25 @@ def uploadImage():
                 hidden = True
                 predictionDone = False
                 job.start()
-                return redirect(url_for('index', image=imagePath, hidden=hidden, error='', result=''))
-    return redirect(url_for('index', image='/static/images/placeholder.png', error="Error occurred", hidden=False, result=''))
 
+                return redirect(url_for('index', image=imagePath, hidden=hidden, error='', result='', poll=1))
+    return redirect(url_for('index', image='/static/images/placeholder.png', error="Error occurred", hidden=False, result='', poll=0))
+
+# polls this url to see when prediction is done
 @app.route('/status')
 def status():
     return jsonify(dict(status=predictionDone))
 
+# this url displays result of prediction
 @app.route('/result')
 def result():
     global image, result, hidden, predictionDone
-    predictionDone = False
-    return redirect(url_for('index', image=image, error="", hidden=False, result=result))
+    return redirect(url_for('index', image=image, error="", hidden=False, result=result, poll=0))
 
-
+# performs prediction
 def predict(filepath):
     global predictionDone, result, hidden
-    print('do some predictions here')
     result = model.predict(filepath)
-    print('predictions done')
     predictionDone = True
     hidden = False
 
