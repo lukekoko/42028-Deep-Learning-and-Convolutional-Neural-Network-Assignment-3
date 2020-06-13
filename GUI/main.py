@@ -5,7 +5,7 @@ import model
 from threading import Thread
 import time
 
-UPLOAD_FOLDER = './static/images'
+UPLOAD_FOLDER = './static/images/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 app = Flask(__name__)
@@ -67,11 +67,10 @@ def result():
 def predict(filepath):
     global predictionDone, result, hidden
     print('do some predictions here')
-    model.predict(filepath)
+    result = model.predict(filepath)
     print('predictions done')
     predictionDone = True
     hidden = False
-    result = 'You have COVID'
 
 if __name__ == '__main__':
     app.run(debug=True)

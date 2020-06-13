@@ -1,5 +1,4 @@
-*.png
-*.jpg
-*.jpeg
 *.pyc
 venv
+GUI/model
+GUI/static/images/uploads
