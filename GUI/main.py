@@ -4,6 +4,7 @@ import os
 import model
 from threading import Thread
 import time
+from pathlib import Path
 
 UPLOAD_FOLDER = './static/images/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
@@ -16,6 +17,9 @@ predictionDone = False
 image = None
 result = ''
 hidden = False
+
+Path('./model').mkdir(parents=True, exist_ok=True)
+Path('./static/images/uploads').mkdir(parents=True, exist_ok=True)
 
 @app.route('/')
 def index():
