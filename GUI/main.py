@@ -1,9 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 from werkzeug.utils import secure_filename
 import os
 import model
-from threading import Thread
-import time
 from pathlib import Path
 
 UPLOAD_FOLDER = './static/images/uploads'
@@ -13,22 +11,15 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = "meme" 
 
-predictionDone = False
-image = None
-result = ''
-hidden = False
-
 Path('./model').mkdir(parents=True, exist_ok=True)
 Path('./static/images/uploads').mkdir(parents=True, exist_ok=True)
 
 @app.route('/')
 def index():
-    global predictionDone
-    predictionDone = False
     if (request.args):
-        return render_template("index.html", image=request.args.get('image'), error=request.args.get('error'), hidden=(request.args.get('hidden') == 'True'), result=request.args.get('result'), poll=request.args.get('poll'))
+        return render_template("index.html", image=request.args.get('image'), error=request.args.get('error'), result=request.args.get('result'))
     else:
-        return render_template("index.html", image='/static/images/placeholder.png', hidden=hidden, error='', result='Please upload an image to be classified', poll=0)
+        return render_template("index.html", image='/static/images/placeholder.png', error='', result='Please upload an image to be classified')
 
 # checks if file is image
 def allowed_file(filename):
@@ -44,37 +35,12 @@ def uploadImage():
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 imagePath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                # save image path in global variable
-                global image
-                image = imagePath
+                # save image to access later
                 file.save(imagePath)
-                job = Thread(target=predict, args=(imagePath,))
-                global predictionDone, hidden, result
-                result = ''
-                hidden = True
-                predictionDone = False
-                job.start()
-
-                return redirect(url_for('index', image=imagePath, hidden=hidden, error='', result='', poll=1))
-    return redirect(url_for('index', image='/static/images/placeholder.png', error="Error occurred", hidden=False, result='', poll=0))
-
-# polls this url to see when prediction is done
-@app.route('/status')
-def status():
-    return jsonify(dict(status=predictionDone))
-
-# this url displays result of prediction
-@app.route('/result')
-def result():
-    global image, result, hidden, predictionDone
-    return redirect(url_for('index', image=image, error="", hidden=False, result=result, poll=0))
-
-# performs prediction
-def predict(filepath):
-    global predictionDone, result, hidden
-    result = model.predict(filepath)
-    predictionDone = True
-    hidden = False
+                # predict on image
+                result = model.predict(imagePath)
+                return redirect(url_for('index', image=imagePath, error="", result=result))  
+    return redirect(url_for('index', image='/static/images/placeholder.png', error="Error occurred", result=''))
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", debug=True)
