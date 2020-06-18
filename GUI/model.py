@@ -18,7 +18,7 @@ def predict(filepath):
     x = image.img_to_array(img) / 255
     x = np.expand_dims(x, axis=0)
     # predict using loaded model
-    prediction = (model.predict(x) > 0.5).astype("int32")
+    prediction = (model.predict(x) > 0.01).astype("int32")
     # return result
     result = prediction[0][0]
     # pathlib.Path(filepath).unlink()
